@@ -1,0 +1,9 @@
+{
+  "ql_url": "http://你的青龙面板IP:5700",
+  "ql_client_id": "你的Client ID",
+  "ql_client_secret": "你的Client Secret",
+  "monitor_interval": 60,
+  "monitor_task_names": [],
+  "notify_on_success": false,
+  "notify_on_failure": true
+}
