@@ -6,12 +6,56 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 import aiohttp
-from astrbot.core.plugin import BasePlugin
-from astrbot.core.message import MessageEvent
+
+# ========== 兼容不同 AstrBot 版本的导入 ==========
+import importlib
+
+BasePlugin = None
+MessageEvent = None
+
+# 尝试各种可能的 BasePlugin 路径
+for path in [
+    "astrbot.core.plugin",
+    "astrbot.api.plugin",
+    "astrbot.plugin",
+    "astrbot.core.base_plugin",
+    "astrbot.api.base_plugin"
+]:
+    try:
+        module = importlib.import_module(path)
+        if hasattr(module, "BasePlugin"):
+            BasePlugin = module.BasePlugin
+            break
+    except ImportError:
+        continue
+
+if BasePlugin is None:
+    raise ImportError("无法找到 AstrBot 的 BasePlugin，请检查安装或联系插件作者。")
+
+# 尝试各种可能的 MessageEvent 路径
+for path in [
+    "astrbot.core.message",
+    "astrbot.api.message",
+    "astrbot.message"
+]:
+    try:
+        module = importlib.import_module(path)
+        if hasattr(module, "MessageEvent"):
+            MessageEvent = module.MessageEvent
+            break
+    except ImportError:
+        continue
+
+if MessageEvent is None:
+    raise ImportError("无法找到 AstrBot 的 MessageEvent，请检查安装或联系插件作者。")
 
 logger = logging.getLogger(__name__)
 
 class QinglongMonitorPlugin(BasePlugin):
+    """
+    青龙面板监控插件（兼容 AstrBot v4.x）
+    """
+
     def __init__(self):
         super().__init__()
         self.config = {}
