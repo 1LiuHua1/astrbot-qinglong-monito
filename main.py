@@ -1,4 +1,4 @@
-# qinglong_monitor.py
+# main.py
 import asyncio
 import logging
 import time
@@ -7,55 +7,13 @@ from typing import Dict, List, Optional
 
 import aiohttp
 
-# ========== 兼容不同 AstrBot 版本的导入 ==========
-import importlib
-
-BasePlugin = None
-MessageEvent = None
-
-# 尝试各种可能的 BasePlugin 路径
-for path in [
-    "astrbot.core.plugin",
-    "astrbot.api.plugin",
-    "astrbot.plugin",
-    "astrbot.core.base_plugin",
-    "astrbot.api.base_plugin"
-]:
-    try:
-        module = importlib.import_module(path)
-        if hasattr(module, "BasePlugin"):
-            BasePlugin = module.BasePlugin
-            break
-    except ImportError:
-        continue
-
-if BasePlugin is None:
-    raise ImportError("无法找到 AstrBot 的 BasePlugin，请检查安装或联系插件作者。")
-
-# 尝试各种可能的 MessageEvent 路径
-for path in [
-    "astrbot.core.message",
-    "astrbot.api.message",
-    "astrbot.message"
-]:
-    try:
-        module = importlib.import_module(path)
-        if hasattr(module, "MessageEvent"):
-            MessageEvent = module.MessageEvent
-            break
-    except ImportError:
-        continue
-
-if MessageEvent is None:
-    raise ImportError("无法找到 AstrBot 的 MessageEvent，请检查安装或联系插件作者。")
+# 官方推荐导入路径（AstrBot v4.16+）
+from astrbot.core.plugin import BasePlugin
+from astrbot.core.message import MessageEvent
 
 logger = logging.getLogger(__name__)
 
 class QinglongMonitorPlugin(BasePlugin):
-    """
-    青龙面板监控插件（兼容 AstrBot v4.x）
-    """
-
     def __init__(self):
         super().__init__()
         self.config = {}
@@ -80,6 +38,8 @@ class QinglongMonitorPlugin(BasePlugin):
 
         self.session = aiohttp.ClientSession()
         asyncio.create_task(self._background_monitor())
+        # 注册命令
+        self.register_command("ql", self.handle_ql_command)
         logger.info("青龙面板监控插件初始化成功")
 
     async def cleanup(self):
@@ -193,10 +153,10 @@ class QinglongMonitorPlugin(BasePlugin):
                            f"时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
                            f"日志摘要：\n```\n{log_preview}\n```")
                     for sub in self.subscribers[:]:
-                        await self.send_message(sub, msg)
+                        await sub.reply(msg)        # 使用 reply 方法发送
                 self.last_task_status[str(cron_id)] = status
 
-    # ---------- 命令注册 ----------
+    # ---------- 命令处理 ----------
     async def handle_ql_command(self, event: MessageEvent, args: str):
         """处理 .ql 命令"""
         if not args:
@@ -393,7 +353,3 @@ class QinglongMonitorPlugin(BasePlugin):
             "  .ql cron log 京东签到\n"
             "  .ql cron run 京东签到"
         )
-
-    def register(self):
-        """插件注册命令（AstrBot 自动调用）"""
-        self.register_command("ql", self.handle_ql_command)
