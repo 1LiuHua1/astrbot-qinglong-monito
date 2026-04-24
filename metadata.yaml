@@ -1,7 +1,10 @@
-name: qinglong_monitor
+name: astrbot_plugin_qinglong
+display_name: 青龙面板监控插件
 version: "1.0.0"
-description: 青龙面板监控插件，支持查看定时任务、订阅、环境变量、依赖，实时监控任务状态
+description: 青龙面板监控，支持查看定时任务、订阅、环境变量、依赖，实时监控任务状态
 author: 1LiuHua1
-entry: qinglong_monitor.py   # 重要：与主文件名一致
+entry: main.py
+astrbot_version: ">=4.16,<5"        # 根据你的 AstrBot 版本调整
 dependencies:
   - aiohttp>=3.8.0
+support_platforms: []                # 如果有特殊平台可以填，留空表示通用
